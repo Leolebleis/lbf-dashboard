@@ -18,17 +18,30 @@ export default class Table extends React.Component {
   state = {
     quotes: [],
     showModifyModal: false,
+    showAddModal: false,
   };
 
-  handleOpenModal = () => {
+  handleOpenAddModal = () => {
     this.setState({
-      show: true,
+      showAddModal: true,
     });
   };
 
-  handleCloseModal = () => {
+  handleCloseAddModal = () => {
     this.setState({
-      show: false,
+      showAddModal: false,
+    });
+  };
+
+  handleOpenModifyModal = () => {
+    this.setState({
+      showModifyModal: true,
+    });
+  }
+
+  handleCloseModifyModal = () => {
+    this.setState({
+      showModifyModal: false,
     });
   };
 
@@ -82,7 +95,7 @@ export default class Table extends React.Component {
       <div id={row.id} className="row">
         <div className="col d-flex justify-content-center p-0">
           <div
-            onClick={() => this.handleModify(row.id)}
+            onClick={() => this.handleOpenModifyModal(row.id)}
             className="btn btn-large btn-outline-info"
           >
             <FaPen />
@@ -100,11 +113,7 @@ export default class Table extends React.Component {
     );
   }
 
-  handleModify = (id) => {
-    let name = prompt("New name");
-
-    name = JSON.stringify({ name });
-    modifyQuote(id, name).then((response) => this.refreshState());
+  handleModifyClick = (id) => {
   };
 
   handleDelete = (id) => {
@@ -119,13 +128,31 @@ export default class Table extends React.Component {
   handleAdd = (event) => {
     event.preventDefault();
 
-    console.log(event);
-    console.log(event.target);
+    let category = event.target[0].value;
+    let merchant = event.target[1].value;
+    let name = event.target[2].value;
+    let unit = event.target[3].value;
+    let unitPrice = event.target[4].value;
+
+    let newQuote = {
+      category: category,
+      merchant: merchant,
+      name: name,
+      unit: unit,
+      unitPrice: unitPrice,
+    };
+
+    createQuote(newQuote).then((response) => {
+      console.log(response);
+      this.refreshState();
+    });
+
     this.handleCloseModal();
   };
 
   refreshState = () => {
     getQuotes().then((response) => {
+      console.log("State refreshed");
       this.setState({
         quotes: response,
       });
@@ -141,13 +168,14 @@ export default class Table extends React.Component {
       <Container>
         <Header />
 
-        <Button onClick={() => this.handleOpenModal()}>
+        <Button onClick={() => this.handleOpenAddModal()}>
           Ajouter une offre
         </Button>
 
-        <Modal show={this.state.show} onHide={this.handleCloseModal}>
+        <Modal show={this.state.showAddModal} onHide={this.handleCloseAddModal}>
           <Container>
-            <Form>
+            <Form onSubmit={(e) => this.handleAdd(e)}>
+              <h1>Ajouter une offre</h1>
               <Form.Group controlId="formCategory">
                 <Form.Label>Catégorie</Form.Label>
                 <Form.Control
@@ -174,18 +202,57 @@ export default class Table extends React.Component {
               </Form.Group>
 
               <Form.Group controlId="formUnitPrice">
-                <Form.Label>Unité</Form.Label>
+                <Form.Label>Prix par unité</Form.Label>
                 <Form.Control placeholder="Entrez le prix par unité" />
                 <Form.Text className="text-muted">
                   Le prix doit être entré hors taxes.
                 </Form.Text>
               </Form.Group>
 
-              <Button
-                variant="primary"
-                type="submit"
-                onClick={this.handleAdd.bind(this)}
-              >
+              <Button variant="primary" type="submit">
+                Submit
+              </Button>
+            </Form>
+          </Container>
+        </Modal>
+        <Modal show={this.state.showModifyModal} onHide={this.handleCloseModifyModal}>
+          <Container>
+            <Form onSubmit={(e) => this.handleAdd(e)}>
+              <Form.Group controlId="formCategory">
+                <h1>Modifier une offre</h1>
+                <Form.Label>Catégorie</Form.Label>
+                <Form.Control
+                  inputRef={(ref) => {
+                    this.myInput = ref;
+                  }}
+                  placeholder="Entrez la catégorie"
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formMerchant">
+                <Form.Label>Fournisseur</Form.Label>
+                <Form.Control placeholder="Entrez le nom du fournisseur" />
+              </Form.Group>
+
+              <Form.Group controlId="formName">
+                <Form.Label>Nom</Form.Label>
+                <Form.Control placeholder="Entrez le nom" />
+              </Form.Group>
+
+              <Form.Group controlId="formUnit">
+                <Form.Label>Unité</Form.Label>
+                <Form.Control placeholder="Entrez l'unité" />
+              </Form.Group>
+
+              <Form.Group controlId="formUnitPrice">
+                <Form.Label>Prix par unité</Form.Label>
+                <Form.Control placeholder="Entrez le prix par unité" />
+                <Form.Text className="text-muted">
+                  Le prix doit être entré hors taxes.
+                </Form.Text>
+              </Form.Group>
+
+              <Button variant="primary" type="submit">
                 Submit
               </Button>
             </Form>

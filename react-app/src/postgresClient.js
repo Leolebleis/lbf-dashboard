@@ -15,7 +15,7 @@ export function createQuote(body) {
     body: JSON.stringify(body),
   })
     .then(response => {
-      return response.json();
+      return response.text();
     })
 }
 
