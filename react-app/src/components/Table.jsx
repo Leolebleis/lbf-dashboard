@@ -1,6 +1,4 @@
 import React from "react";
-import Container from "react-bootstrap/Container";
-import Header from "./Header";
 import BootstrapTable from "react-bootstrap-table-next";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -20,6 +18,8 @@ import {
 export default class Table extends React.Component {
   state = {
     quotes: [],
+    filteredQuotes: [],
+    query: "",
     showModifyModal: false,
     showAddModal: false,
     id: 0,
@@ -142,8 +142,16 @@ export default class Table extends React.Component {
 
   refreshState = () => {
     getQuotes().then((response) => {
+      let quotes = response;
+      let query = this.state.query;
+
+      let newQuotes = quotes.filter(function (quote) {
+        return quote.name.toLowerCase().includes(query.toLowerCase());
+      });
+
       this.setState({
         quotes: response,
+        filteredQuotes: newQuotes,
       });
     });
   };
@@ -177,13 +185,17 @@ export default class Table extends React.Component {
   }
 
   handleSearch = (event) => {
-    console.log(event.target.value)
-  }
+    this.setState(
+      {
+        query: event.target.value,
+      },
+      () => this.refreshState()
+    );
+  };
 
   render() {
     return (
-      <Container>
-        <Header />
+      <React.Fragment>
         <Row className="justify-content-md-center align-items-center">
           <Col className="col-auto">
             <Button className="m-3" onClick={() => this.toggleAddModal()}>
@@ -191,7 +203,10 @@ export default class Table extends React.Component {
             </Button>
           </Col>
           <Col className="col-4">
-            <Form.Control placeholder="Rercherche..." onChange={(e) => this.handleSearch(e)} />
+            <Form.Control
+              placeholder="Rercherche..."
+              onChange={(e) => this.handleSearch(e)}
+            />
           </Col>
         </Row>
         <Modal show={this.state.showAddModal} onHide={this.toggleAddModal}>
@@ -212,11 +227,11 @@ export default class Table extends React.Component {
         <BootstrapTable
           bootstrap4
           keyField="id"
-          data={this.state.quotes}
+          data={this.state.filteredQuotes}
           columns={this.columns}
           defaultSorted={this.defaultSorted}
         />
-      </Container>
+      </React.Fragment>
     );
   }
 }
