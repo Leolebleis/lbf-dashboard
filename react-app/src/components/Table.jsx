@@ -140,19 +140,26 @@ export default class Table extends React.Component {
     }
   };
 
-  refreshState = () => {
+  refreshState = (firstTime) => {
     getQuotes().then((response) => {
-      let quotes = response;
-      let query = this.state.query;
-
-      let newQuotes = quotes.filter(function (quote) {
-        return quote.name.toLowerCase().includes(query.toLowerCase());
-      });
-
-      this.setState({
-        quotes: response,
-        filteredQuotes: newQuotes,
-      });
+      if (firstTime) {
+        this.setState({
+          quotes: response,
+          filteredQuotes: response,
+        });
+      } else {
+        this.setState(
+          {
+            quotes: response,
+            filteredQuotes: this.filterQuotes(),
+          },
+          () => {
+            this.setState({
+              filteredQuotes: this.filterQuotes(),
+            });
+          }
+        );
+      }
     });
   };
 
@@ -181,15 +188,29 @@ export default class Table extends React.Component {
   };
 
   componentDidMount() {
-    this.refreshState();
+    this.refreshState(true);
   }
+
+  filterQuotes = () => {
+    let query = this.state.query;
+    let quotes = this.state.quotes;
+    let newQuotes = quotes.filter(function (quote) {
+      return quote.name.toLowerCase().includes(query.toLowerCase());
+    });
+
+    this.setState({
+      filteredQuotes: newQuotes,
+    });
+
+    return newQuotes;
+  };
 
   handleSearch = (event) => {
     this.setState(
       {
         query: event.target.value,
       },
-      () => this.refreshState()
+      () => this.filterQuotes()
     );
   };
 
