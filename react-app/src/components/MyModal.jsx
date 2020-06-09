@@ -1,11 +1,19 @@
 import React from "react";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
 
 export default class MyModal extends React.Component {
-  render() {
+  render(props) {
     return (
-      <Container>
-        <Form onSubmit={(e) => this.handleAdd(e)}>
-          <h1>Ajouter une offre</h1>
+      <Container className="p-5">
+        <Form id={this.props.id} onSubmit={this.props.handleClick.bind(this)}>
+          <h1>
+            {this.props.type === "add"
+              ? "Ajouter une offre"
+              : "Modifier l'offre #" + this.props.id}
+          </h1>
+          <p>Changez uniquement les valeurs que vous souhaitez changer.</p>
           <Form.Group controlId="formCategory">
             <Form.Label>Catégorie</Form.Label>
             <Form.Control

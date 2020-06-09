@@ -2,46 +2,39 @@ import React from "react";
 import Container from "react-bootstrap/Container";
 import Header from "./Header";
 import BootstrapTable from "react-bootstrap-table-next";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Form from "react-bootstrap/Form";
+import { AiFillDelete } from "react-icons/ai";
+import { FaPen } from "react-icons/fa";
+import MyModal from "./MyModal";
 import {
   getQuotes,
   deleteQuote,
   modifyQuote,
   createQuote,
 } from "../postgresClient";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
-import { AiFillDelete } from "react-icons/ai";
-import { FaPen } from "react-icons/fa";
 
 export default class Table extends React.Component {
   state = {
     quotes: [],
     showModifyModal: false,
     showAddModal: false,
+    id: 0,
   };
 
-  handleOpenAddModal = () => {
+  toggleAddModal = () => {
     this.setState({
-      showAddModal: true,
+      showAddModal: !this.state.showAddModal,
     });
   };
 
-  handleCloseAddModal = () => {
+  toggleModifyModal = (id) => {
     this.setState({
-      showAddModal: false,
-    });
-  };
-
-  handleOpenModifyModal = () => {
-    this.setState({
-      showModifyModal: true,
-    });
-  }
-
-  handleCloseModifyModal = () => {
-    this.setState({
-      showModifyModal: false,
+      showModifyModal: !this.state.showModifyModal,
+      id: id,
     });
   };
 
@@ -95,7 +88,7 @@ export default class Table extends React.Component {
       <div id={row.id} className="row">
         <div className="col d-flex justify-content-center p-0">
           <div
-            onClick={() => this.handleOpenModifyModal(row.id)}
+            onClick={() => this.toggleModifyModal(row.id)}
             className="btn btn-large btn-outline-info"
           >
             <FaPen />
@@ -113,16 +106,46 @@ export default class Table extends React.Component {
     );
   }
 
-  handleModifyClick = (id) => {
+  handleModifyClick = (event) => {
+    event.preventDefault();
+
+    let category = event.target[0].value;
+    let merchant = event.target[1].value;
+    let name = event.target[2].value;
+    let unit = event.target[3].value;
+    let unitPrice = event.target[4].value;
+
+    let newQuote = {};
+
+    Object.assign(
+      newQuote,
+      category ? { category } : null,
+      merchant ? { merchant } : null,
+      name ? { name } : null,
+      unit ? { unit } : null,
+      unitPrice ? { unitPrice } : null
+    );
+
+    modifyQuote(event.target.getAttribute("id"), newQuote).then(() => {
+      this.refreshState();
+      this.toggleModifyModal();
+    });
   };
 
   handleDelete = (id) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette offre ?")) {
-      deleteQuote(id).then((response) => {
-        console.log(response);
+      deleteQuote(id).then(() => {
         this.refreshState();
       });
     }
+  };
+
+  refreshState = () => {
+    getQuotes().then((response) => {
+      this.setState({
+        quotes: response,
+      });
+    });
   };
 
   handleAdd = (event) => {
@@ -135,128 +158,55 @@ export default class Table extends React.Component {
     let unitPrice = event.target[4].value;
 
     let newQuote = {
-      category: category,
-      merchant: merchant,
-      name: name,
-      unit: unit,
-      unitPrice: unitPrice,
+      category,
+      merchant,
+      name,
+      unit,
+      unitPrice,
     };
 
-    createQuote(newQuote).then((response) => {
-      console.log(response);
+    createQuote(newQuote).then(() => {
       this.refreshState();
     });
 
-    this.handleCloseModal();
-  };
-
-  refreshState = () => {
-    getQuotes().then((response) => {
-      console.log("State refreshed");
-      this.setState({
-        quotes: response,
-      });
-    });
+    this.toggleAddModal();
   };
 
   componentDidMount() {
     this.refreshState();
   }
 
+  handleSearch = (event) => {
+    console.log(event.target.value)
+  }
+
   render() {
     return (
       <Container>
         <Header />
-
-        <Button onClick={() => this.handleOpenAddModal()}>
-          Ajouter une offre
-        </Button>
-
-        <Modal show={this.state.showAddModal} onHide={this.handleCloseAddModal}>
-          <Container>
-            <Form onSubmit={(e) => this.handleAdd(e)}>
-              <h1>Ajouter une offre</h1>
-              <Form.Group controlId="formCategory">
-                <Form.Label>Catégorie</Form.Label>
-                <Form.Control
-                  inputRef={(ref) => {
-                    this.myInput = ref;
-                  }}
-                  placeholder="Entrez la catégorie"
-                />
-              </Form.Group>
-
-              <Form.Group controlId="formMerchant">
-                <Form.Label>Fournisseur</Form.Label>
-                <Form.Control placeholder="Entrez le nom du fournisseur" />
-              </Form.Group>
-
-              <Form.Group controlId="formName">
-                <Form.Label>Nom</Form.Label>
-                <Form.Control placeholder="Entrez le nom" />
-              </Form.Group>
-
-              <Form.Group controlId="formUnit">
-                <Form.Label>Unité</Form.Label>
-                <Form.Control placeholder="Entrez l'unité" />
-              </Form.Group>
-
-              <Form.Group controlId="formUnitPrice">
-                <Form.Label>Prix par unité</Form.Label>
-                <Form.Control placeholder="Entrez le prix par unité" />
-                <Form.Text className="text-muted">
-                  Le prix doit être entré hors taxes.
-                </Form.Text>
-              </Form.Group>
-
-              <Button variant="primary" type="submit">
-                Submit
-              </Button>
-            </Form>
-          </Container>
+        <Row className="justify-content-md-center align-items-center">
+          <Col className="col-auto">
+            <Button className="m-3" onClick={() => this.toggleAddModal()}>
+              Ajouter une offre
+            </Button>
+          </Col>
+          <Col className="col-4">
+            <Form.Control placeholder="Rercherche..." onChange={(e) => this.handleSearch(e)} />
+          </Col>
+        </Row>
+        <Modal show={this.state.showAddModal} onHide={this.toggleAddModal}>
+          <MyModal type="add" handleClick={this.handleAdd} />
         </Modal>
-        <Modal show={this.state.showModifyModal} onHide={this.handleCloseModifyModal}>
-          <Container>
-            <Form onSubmit={(e) => this.handleAdd(e)}>
-              <Form.Group controlId="formCategory">
-                <h1>Modifier une offre</h1>
-                <Form.Label>Catégorie</Form.Label>
-                <Form.Control
-                  inputRef={(ref) => {
-                    this.myInput = ref;
-                  }}
-                  placeholder="Entrez la catégorie"
-                />
-              </Form.Group>
 
-              <Form.Group controlId="formMerchant">
-                <Form.Label>Fournisseur</Form.Label>
-                <Form.Control placeholder="Entrez le nom du fournisseur" />
-              </Form.Group>
-
-              <Form.Group controlId="formName">
-                <Form.Label>Nom</Form.Label>
-                <Form.Control placeholder="Entrez le nom" />
-              </Form.Group>
-
-              <Form.Group controlId="formUnit">
-                <Form.Label>Unité</Form.Label>
-                <Form.Control placeholder="Entrez l'unité" />
-              </Form.Group>
-
-              <Form.Group controlId="formUnitPrice">
-                <Form.Label>Prix par unité</Form.Label>
-                <Form.Control placeholder="Entrez le prix par unité" />
-                <Form.Text className="text-muted">
-                  Le prix doit être entré hors taxes.
-                </Form.Text>
-              </Form.Group>
-
-              <Button variant="primary" type="submit">
-                Submit
-              </Button>
-            </Form>
-          </Container>
+        <Modal
+          show={this.state.showModifyModal}
+          onHide={this.toggleModifyModal}
+        >
+          <MyModal
+            type="modify"
+            id={this.state.id}
+            handleClick={this.handleModifyClick}
+          />
         </Modal>
 
         <BootstrapTable

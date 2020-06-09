@@ -32,7 +32,7 @@ export function modifyQuote(id, body) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: body,
+    body: JSON.stringify(body),
 
   }).then(response => response.json())
 }
