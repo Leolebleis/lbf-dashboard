@@ -203,11 +203,16 @@ export default class Table extends React.Component {
   }
 
   filterQuotes = () => {
+    let activeFilter = this.state.activeFilter;
     let query = this.state.query;
     let quotes = this.state.quotes;
-    let newQuotes = quotes.filter(function (quote) {
-      return quote.name.toLowerCase().includes(query.toLowerCase());
-    });
+    let searchedQuotes = quotes.filter((quote) =>
+      quote.name.toLowerCase().includes(query.toLowerCase())
+    );
+    let newQuotes =
+      activeFilter === "Tout"
+        ? searchedQuotes
+        : searchedQuotes.filter((quote) => quote.category === activeFilter);
 
     this.setState({
       filteredQuotes: newQuotes,
@@ -226,9 +231,12 @@ export default class Table extends React.Component {
   };
 
   handleFilter = (event) => {
-    this.setState({
-      activeFilter: event.target.value,
-    });
+    this.setState(
+      {
+        activeFilter: event.target.value,
+      },
+      () => this.filterQuotes()
+    );
   };
 
   render() {
@@ -242,8 +250,9 @@ export default class Table extends React.Component {
           </Col>
           <Col className="col-4">
             <Form.Control onChange={(e) => this.handleFilter(e)} as="select">
-              {this.state.categories.forEach((category) => {
-                return <option>Yo</option>;
+              <option key="Tout">Tout</option>
+              {this.state.categories.map((category) => {
+                return <option key={category}>{category}</option>;
               })}
             </Form.Control>
           </Col>
