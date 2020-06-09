@@ -26,6 +26,15 @@ app.get("/quotes", (req, res) => {
     })
 })
 
+app.get("/quotes/:search", (req, res) => {
+  quote_model.getQuotesByName(req.params.search)
+    .then(response => {
+      res.status(200).send(response)
+    }).catch(error => {
+      res.status(500).send(error)
+    })
+})
+
 app.post("/quote", (req, res) => {
   quote_model.createQuote(req.body)
     .then(response => {

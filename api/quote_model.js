@@ -16,6 +16,20 @@ const getQuotes = () => {
   })
 }
 
+const getQuotesByName = (query) => {
+  return new Promise(function (resolve, reject) {
+    let final_query = `SELECT * FROM quotes WHERE name LIKE '%${query}%'`
+
+    pool.query(final_query, (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results.rows);
+    })
+  })
+
+}
+
 const patchQuote = (id, body) => {
   const list_key = Object.keys(body);
   const list_values = Object.values(body);
@@ -66,5 +80,6 @@ module.exports = {
   getQuotes,
   createQuote,
   deleteQuote,
-  patchQuote
+  patchQuote,
+  getQuotesByName
 }
