@@ -19,7 +19,9 @@ export default class Table extends React.Component {
   state = {
     quotes: [],
     filteredQuotes: [],
+    categories: [],
     query: "",
+    activeFilter: "",
     showModifyModal: false,
     showAddModal: false,
     id: 0,
@@ -142,10 +144,18 @@ export default class Table extends React.Component {
 
   refreshState = (firstTime) => {
     getQuotes().then((response) => {
+      let categories = [];
+      response.forEach((quote) => {
+        if (!categories.includes(quote.category)) {
+          categories.push(quote.category);
+        }
+      });
+
       if (firstTime) {
         this.setState({
           quotes: response,
           filteredQuotes: response,
+          categories: categories,
         });
       } else {
         this.setState(
@@ -156,6 +166,7 @@ export default class Table extends React.Component {
           () => {
             this.setState({
               filteredQuotes: this.filterQuotes(),
+              categories: categories,
             });
           }
         );
@@ -214,6 +225,12 @@ export default class Table extends React.Component {
     );
   };
 
+  handleFilter = (event) => {
+    this.setState({
+      activeFilter: event.target.value,
+    });
+  };
+
   render() {
     return (
       <React.Fragment>
@@ -222,6 +239,13 @@ export default class Table extends React.Component {
             <Button className="m-3" onClick={() => this.toggleAddModal()}>
               Ajouter une offre
             </Button>
+          </Col>
+          <Col className="col-4">
+            <Form.Control onChange={(e) => this.handleFilter(e)} as="select">
+              {this.state.categories.forEach((category) => {
+                return <option>Yo</option>;
+              })}
+            </Form.Control>
           </Col>
           <Col className="col-4">
             <Form.Control
