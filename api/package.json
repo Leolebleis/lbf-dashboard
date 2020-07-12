@@ -1,0 +1,23 @@
+{
+  "name": "postgres",
+  "version": "1.0.0",
+  "description": "Postgres react app with crud node js api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "export NODE_ENV=production && env-cmd -f .env.production node index.js",
+    "start:dev": "export NODE_ENV=development && env-cmd -f .env.development node index.js",
+    "start:dockercompose": "export NODE_ENV=dockercompose && env-cmd -f .env.dockercompose node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
+    "env-cmd": "^10.1.0",
+    "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
+    "pg": "^8.2.1"
+  },
+  "devDependencies": {}
+}
